@@ -5,6 +5,7 @@ import com.sgcc.connect.method.SshMethod;
 import com.sgcc.connect.method.TelnetSwitchMethod;
 import com.sgcc.sql.domain.*;
 import com.sgcc.sql.service.*;
+import com.sgcc.web.controller.webSocket.WebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -205,6 +206,9 @@ public class SwitchInteraction {
                 }
                 //交换机返回信息 修整字符串  去除多余 "\r\n" 连续空格 为插入数据美观
                 commandString = Utils.trimString(commandString);
+
+                WebSocketService.sendMessage("badao",commandString);
+
                 //交换机返回信息 按行分割为 字符串数组
                 String[] commandString_split = commandString.split("\r\n");
                 //创建 存储交换机返回数据 实体类
@@ -412,6 +416,10 @@ public class SwitchInteraction {
         }
         //修整返回信息
         command_string =Utils.trimString(command_string);
+
+        WebSocketService.sendMessage("badao",command_string);
+
+
         //按行切割
         String[] split = command_string.split("\r\n");
         ReturnRecord returnRecord = new ReturnRecord();

@@ -1,6 +1,7 @@
 package com.sgcc.web.controller.sql;
 
 import com.sgcc.web.controller.webSocket.WebSocketService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/websocket")
 public class WebSocketController {
-    public static void main(String[] args) {
+    @GetMapping("/pushone")
+    public void pushone(){
         for (int number=0;number<=100;number++){
             try {
                 //睡眠1s
