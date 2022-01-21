@@ -9,6 +9,7 @@ import com.sgcc.common.utils.poi.ExcelUtil;
 import com.sgcc.sql.domain.*;
 import com.sgcc.sql.service.ISwitchProblemService;
 import com.sgcc.sql.service.IValueInformationService;
+import com.sgcc.web.controller.webSocket.WebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -108,7 +109,10 @@ public class SwitchProblemController extends BaseController
     * @E-mail: WeiYaNing97@163.com
     */
     @RequestMapping("getUnresolvedProblemInformationByData")
-    public List<ScanResultsVO> getUnresolvedProblemInformationByData(){
+    public ScanResults getUnresolvedProblemInformationByData(){
+
+        ScanResults scanResults = new ScanResults();
+
         String currentTime = Utils.getCurrentTime();
         String[] data_day = currentTime.split(" ");
         List<SwitchProblemVO> switchProblemList = switchProblemService.selectUnresolvedProblemInformationByData(data_day[0]);
@@ -142,6 +146,8 @@ public class SwitchProblemController extends BaseController
             }
             scanResultsVO.setSwitchProblemVOList(switchProblemVOList);
         }
-        return scanResultsVOList;
+        scanResults.setScanResultsVOS(scanResultsVOList);
+        WebSocketService.sendMessage("badao",scanResults);
+        return scanResults;
     }
 }

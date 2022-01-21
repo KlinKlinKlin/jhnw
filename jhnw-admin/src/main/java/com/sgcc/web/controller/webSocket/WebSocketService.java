@@ -10,7 +10,7 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint(value = "/websocket/{userName}")
+@ServerEndpoint(value = "/websocket/{userName}",encoders = { ServerEncoder.class })
 @Component
 public class WebSocketService {
 
@@ -106,16 +106,14 @@ public class WebSocketService {
      * @param userName
      * @param message
      */
-    public static void sendMessage(String userName,String message){
+    public static void sendMessage(String userName,Object message){
         System.err.print("\r\nuserName="+userName+"message="+message);
         try {
             WebSocketClient webSocketClient = webSocketMap.get(userName);
-            System.err.print("\r\nwebSocketClient="+ webSocketMap.get(userName));
             if(webSocketClient!=null){
-                webSocketClient.getSession().getBasicRemote().sendText(message);
-                System.err.print("\r\nwebSocketClient.getSession().getBasicRemote().sendObject(message)");
+                webSocketClient.getSession().getBasicRemote().sendObject(message);
             }
-        } catch (IOException e) {
+        } catch (IOException | EncodeException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
