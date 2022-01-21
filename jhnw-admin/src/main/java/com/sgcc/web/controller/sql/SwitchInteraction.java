@@ -76,7 +76,6 @@ public class SwitchInteraction {
 
             //获取基本信息
             AjaxResult basicInformationList_ajaxResult = getBasicInformationList(user_String,requestConnect_way, connectMethod, telnetSwitchMethod);
-            System.err.print("\r\nbasicInformationList_ajaxResult:"+basicInformationList_ajaxResult.get("data"));
             AjaxResult ajaxResult = scanProblem(basicInformationList_ajaxResult, //AjaxResult 交换机的基本信息 //设备型号 设备品牌 内部固件版本 子版本号
                     user_String, //登录交换机的 用户信息 登录方式、ip、name、password
                     requestConnect_way, connectMethod, telnetSwitchMethod);
@@ -195,8 +194,10 @@ public class SwitchInteraction {
                 //根据 连接方法 判断 实际连接方式
                 //并发送命令 接受返回结果
                 if (way.equalsIgnoreCase("ssh")){
+                    WebSocketService.sendMessage("badao",command);
                     commandString = connectMethod.sendCommand(command);
                 }else if (way.equalsIgnoreCase("telnet")){
+                    WebSocketService.sendMessage("badao",command);
                     commandString = telnetSwitchMethod.sendCommand(command);
                 }
                 //判断命令是否错误 错误为false 正确为true
@@ -207,18 +208,39 @@ public class SwitchInteraction {
                 //交换机返回信息 修整字符串  去除多余 "\r\n" 连续空格 为插入数据美观
                 commandString = Utils.trimString(commandString);
 
-                WebSocketService.sendMessage("badao",commandString);
-
                 //交换机返回信息 按行分割为 字符串数组
                 String[] commandString_split = commandString.split("\r\n");
                 //创建 存储交换机返回数据 实体类
                 ReturnRecord returnRecord = new ReturnRecord();
                 // 执行命令赋值
-                returnRecord.setCurrentCommLog(command.trim());
+                String commandtrim = command.trim();
+                returnRecord.setCurrentCommLog(commandtrim);
                 // 返回日志内容
-                returnRecord.setCurrentReturnLog(commandString.substring(0,commandString.length()-commandString_split[commandString_split.length-1].length()-2).trim());
+                String current_return_log = commandString.substring(0, commandString.length() - commandString_split[commandString_split.length - 1].length() - 2).trim();
+                returnRecord.setCurrentReturnLog(current_return_log);
+                //返回日志前后都有\r\n
+                String current_return_log_substring_end = current_return_log.substring(current_return_log.length() - 2, current_return_log.length());
+                if (!current_return_log_substring_end.equals("\r\n")){
+                    current_return_log = current_return_log+"\r\n";
+                }
+                String current_return_log_substring_start = current_return_log.substring(0, 2);
+                if (!current_return_log_substring_start.equals("\r\n")){
+                    current_return_log = "\r\n"+current_return_log;
+                }
+                WebSocketService.sendMessage("badao",current_return_log);
                 //当前标识符 如：<H3C> [H3C]
-                returnRecord.setCurrentIdentifier(commandString_split[commandString_split.length-1].trim());
+                String current_identifier = commandString_split[commandString_split.length - 1].trim();
+                returnRecord.setCurrentIdentifier(current_identifier);
+                //当前标识符前后都没有\r\n
+                String current_identifier_substring_end = current_identifier.substring(current_identifier.length() - 2, current_identifier.length());
+                if (current_identifier_substring_end.equals("\r\n")){
+                    current_identifier = current_identifier.substring(0,current_identifier.length()-2);
+                }
+                String current_identifier_substring_start = current_identifier.substring(0, 2);
+                if (current_identifier_substring_start.equals("\r\n")){
+                    current_identifier = current_identifier.substring(2,current_identifier.length());
+                }
+                WebSocketService.sendMessage("badao",current_identifier);
                 //存储交换机返回数据 插入数据库
                 int insert_Int = returnRecordService.insertReturnRecord(returnRecord);
                 //当前命令字符串 返回命令总和("\r\n"分隔)
@@ -282,6 +304,10 @@ public class SwitchInteraction {
                     map.put("xinghao",deviceModel);
                     map.put("banben",firmwareVersion);
                     map.put("zibanben",subversionNumber);
+                    WebSocketService.sendMessage("pinpai",deviceBrand);
+                    WebSocketService.sendMessage("xinghao",deviceModel);
+                    WebSocketService.sendMessage("banben",firmwareVersion);
+                    WebSocketService.sendMessage("zibanben",subversionNumber);
                     return AjaxResult.success(map);
                 }
             }
@@ -362,16 +388,48 @@ public class SwitchInteraction {
             String command = commandLogic.getCommand();
             String command_string = null;
             if (way.equalsIgnoreCase("ssh")){
+
+                WebSocketService.sendMessage("badao",command);
                 command_string = connectMethod.sendCommand(command);
             }else if (way.equalsIgnoreCase("telnet")){
+
+                WebSocketService.sendMessage("badao",command);
                 command_string = telnetSwitchMethod.sendCommand(command);
             }
+
             command_string =Utils.trimString(command_string);
+
+
             String[] split = command_string.split("\r\n");
             ReturnRecord returnRecord = new ReturnRecord();
             returnRecord.setCurrentCommLog(command.trim());
-            returnRecord.setCurrentReturnLog(command_string.substring(0,command_string.length()-split[split.length-1].length()-2).trim());
-            returnRecord.setCurrentIdentifier(split[split.length-1].trim());
+            //返回日志
+            String current_return_log = command_string.substring(0,command_string.length()-split[split.length-1].length()-2).trim();
+            returnRecord.setCurrentReturnLog(current_return_log);
+            //返回日志前后都有\r\n
+            String current_return_log_substring_end = current_return_log.substring(current_return_log.length() - 2, current_return_log.length());
+            if (!current_return_log_substring_end.equals("\r\n")){
+                current_return_log = current_return_log+"\r\n";
+            }
+            String current_return_log_substring_start = current_return_log.substring(0, 2);
+            if (!current_return_log_substring_start.equals("\r\n")){
+                current_return_log = "\r\n"+current_return_log;
+            }
+            WebSocketService.sendMessage("badao",current_return_log);
+            //当前标识符
+            String current_identifier = split[split.length-1].trim();
+            returnRecord.setCurrentIdentifier(current_identifier);
+            //当前标识符前后都没有\r\n
+            String current_identifier_substring_end = current_identifier.substring(current_identifier.length() - 2, current_identifier.length());
+            if (current_identifier_substring_end.equals("\r\n")){
+                current_identifier = current_identifier.substring(0,current_identifier.length()-2);
+            }
+            String current_identifier_substring_start = current_identifier.substring(0, 2);
+            if (current_identifier_substring_start.equals("\r\n")){
+                current_identifier = current_identifier.substring(2,current_identifier.length());
+            }
+            WebSocketService.sendMessage("badao",current_identifier);
+
             int insert_Int = returnRecordService.insertReturnRecord(returnRecord);
             //判断是否简单检验
             if (commandLogic.getResultCheckId()==1l){
@@ -410,23 +468,45 @@ public class SwitchInteraction {
         //执行命令
         String command_string = null;
         if (way.equalsIgnoreCase("ssh")){
+            WebSocketService.sendMessage("badao",command);
             command_string = connectMethod.sendCommand(command);
         }else if (way.equalsIgnoreCase("telnet")){
+            WebSocketService.sendMessage("badao",command);
             command_string = telnetSwitchMethod.sendCommand(command);
         }
         //修整返回信息
         command_string =Utils.trimString(command_string);
 
-        WebSocketService.sendMessage("badao",command_string);
-
-
         //按行切割
         String[] split = command_string.split("\r\n");
         ReturnRecord returnRecord = new ReturnRecord();
         returnRecord.setCurrentCommLog(command.trim());
-        returnRecord.setCurrentReturnLog(command_string.substring(0,command_string.length()-split[split.length-1].length()-2).trim());
+        String current_return_log =command_string.substring(0,command_string.length()-split[split.length-1].length()-2).trim();
+        returnRecord.setCurrentReturnLog(current_return_log);
+        //返回日志前后都有\r\n
+        String current_return_log_substring_end = current_return_log.substring(current_return_log.length() - 2, current_return_log.length());
+        if (!current_return_log_substring_end.equals("\r\n")){
+            current_return_log = current_return_log+"\r\n";
+        }
+        String current_return_log_substring_start = current_return_log.substring(0, 2);
+        if (!current_return_log_substring_start.equals("\r\n")){
+            current_return_log = "\r\n"+current_return_log;
+        }
+        WebSocketService.sendMessage("badao",current_return_log);
+
         //按行切割，最后一位应该是 标识符
-        returnRecord.setCurrentIdentifier(split[split.length-1].trim());
+        String current_identifier = split[split.length-1].trim();
+        returnRecord.setCurrentIdentifier(current_identifier);
+        //当前标识符前后都没有\r\n
+        String current_identifier_substring_end = current_identifier.substring(current_identifier.length() - 2, current_identifier.length());
+        if (current_identifier_substring_end.equals("\r\n")){
+            current_identifier = current_identifier.substring(0,current_identifier.length()-2);
+        }
+        String current_identifier_substring_start = current_identifier.substring(0, 2);
+        if (current_identifier_substring_start.equals("\r\n")){
+            current_identifier = current_identifier.substring(2,current_identifier.length());
+        }
+        WebSocketService.sendMessage("badao",current_identifier);
         //返回信息表，返回插入条数
         int insert_Int = returnRecordService.insertReturnRecord(returnRecord);
         //判断是否简单检验 1L为简单校验  默认0L 为分析数据表自定义校验

@@ -43,11 +43,11 @@ public class WebSocketService {
 
         log.info("----------------------------------------------------------------------------");
         log.info("用户连接:"+userName+",当前在线人数为:" + getOnlineCount());
-        try {
+        /*try {
             sendMessage(userName);
         } catch (IOException e) {
             log.error("用户:"+userName+",网络异常!!!!!!");
-        }
+        }*/
     }
 
     /**
@@ -106,16 +106,16 @@ public class WebSocketService {
      * @param userName
      * @param message
      */
-    public static void sendMessage(String userName,Object message){
+    public static void sendMessage(String userName,String message){
         System.err.print("\r\nuserName="+userName+"message="+message);
         try {
             WebSocketClient webSocketClient = webSocketMap.get(userName);
             System.err.print("\r\nwebSocketClient="+ webSocketMap.get(userName));
             if(webSocketClient!=null){
-                webSocketClient.getSession().getBasicRemote().sendObject(message);
+                webSocketClient.getSession().getBasicRemote().sendText(message);
                 System.err.print("\r\nwebSocketClient.getSession().getBasicRemote().sendObject(message)");
             }
-        } catch (IOException | EncodeException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }

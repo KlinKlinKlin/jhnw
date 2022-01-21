@@ -16,6 +16,14 @@
       </el-form-item>
     </el-form>
 
+     <div class="app-container home">
+        <el-row :gutter="20">
+          websocket推送
+          <WebSocket></WebSocket>
+        </el-row>
+        <el-divider />
+      </div>
+
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -88,7 +96,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -120,9 +128,14 @@
 
 <script>
 import { listReturn_record, getReturn_record, delReturn_record, addReturn_record, updateReturn_record, exportReturn_record } from "@/api/sql/return_record";
+import WebSocket from '@/views/sql/WebSocket/WebSocket'
+
 
 export default {
   name: "Return_record",
+  components:{
+    WebSocket
+  },
   data() {
     return {
       // 遮罩层

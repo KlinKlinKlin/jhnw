@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebSocketController {
     @GetMapping("/pushone")
     public void pushone(){
-        for (int number=0;number<=100;number++){
+        for (int number=0;number<=5;number++){
             try {
                 //睡眠1s
                 Thread.currentThread().sleep(1000);
